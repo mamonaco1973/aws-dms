@@ -6,39 +6,6 @@
 # ===============================================================================
 
 # ------------------------------------------------------------------------------
-# AURORA POSTGRESQL PASSWORD
-# ------------------------------------------------------------------------------
-
-# Generate a secure random alphanumeric password
-resource "random_password" "aurora_password" {
-  length  = 24    # Total password length in characters
-  special = false # Disable special characters for client compatibility
-}
-
-# ------------------------------------------------------------------------------
-# AURORA POSTGRESQL SECRETS MANAGER SECRET
-# ------------------------------------------------------------------------------
-
-# Define a Secrets Manager secret for Aurora credentials
-resource "aws_secretsmanager_secret" "aurora_credentials" {
-  name                    = "aurora-postgres-credentials"
-  description             = "root credentials for example Aurora Postgres Instance"
-  recovery_window_in_days = 0
-}
-
-# Store the Aurora credentials as a versioned secret
-resource "aws_secretsmanager_secret_version" "aurora_credentials_version" {
-  secret_id = aws_secretsmanager_secret.aurora_credentials.id
-
-  # Encode credentials as JSON for downstream consumers
-  secret_string = jsonencode({
-    user     = "postgres"                             # Static database username
-    password = random_password.aurora_password.result # Generated password
-    endpoint = split(":", aws_rds_cluster.aurora_cluster.endpoint)[0]
-  })
-}
-
-# ------------------------------------------------------------------------------
 # STANDALONE POSTGRESQL RDS PASSWORD
 # ------------------------------------------------------------------------------
 
@@ -68,5 +35,49 @@ resource "aws_secretsmanager_secret_version" "postgres_credentials_version" {
     user     = "postgres"                               # Static database username
     password = random_password.postgres_password.result # Generated password
     endpoint = split(":", aws_db_instance.postgres_rds.endpoint)[0]
+  })
+}
+
+# ==============================================================================
+# MYSQL RDS: PASSWORD GENERATION
+# ==============================================================================
+resource "random_password" "mysql_password" {
+  # ----------------------------------------------------------------------------
+  # PASSWORD POLICY
+  # ----------------------------------------------------------------------------
+  # Generate a 24-character alphanumeric password.
+  length  = 24
+  special = false
+}
+
+# ==============================================================================
+# MYSQL RDS: SECRETS MANAGER SECRET
+# ==============================================================================
+resource "aws_secretsmanager_secret" "mysql_credentials" {
+  # ----------------------------------------------------------------------------
+  # SECRET IDENTITY
+  # ----------------------------------------------------------------------------
+  # Logical name for the secret in AWS Secrets Manager.
+  name        = "mysql-credentials"
+  description = "root credentials for example RDS MySQL Instance"
+  # ----------------------------------------------------------------------------
+  # DELETION BEHAVIOR
+  # ----------------------------------------------------------------------------
+  # Force immediate deletion instead of a recovery window.
+  recovery_window_in_days = 0
+}
+
+# ------------------------------------------------------------------------------
+# MYSQL RDS: SECRET VERSION (PAYLOAD)
+# ------------------------------------------------------------------------------
+resource "aws_secretsmanager_secret_version" "mysql_credentials_version" {
+  # Parent secret to which this version belongs.
+  secret_id = aws_secretsmanager_secret.mysql_credentials.id
+
+  # Store connection details and generated password as a JSON document.
+  secret_string = jsonencode({
+    user     = "admin"
+    password = random_password.mysql_password.result
+    endpoint = split(":", aws_db_instance.mysql_rds.endpoint)[0]
   })
 }
