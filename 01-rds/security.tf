@@ -20,6 +20,16 @@ resource "aws_security_group" "rds_sg" {
   # INBOUND RULES
   # -----------------------------------------------------------------------------
 
+  # Allow MySQL traffic on TCP port 3306.
+  ingress {
+    from_port = 3306
+    to_port   = 3306
+    protocol  = "tcp"
+
+    # Open to all IPv4 addresses (unsafe for production).
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Allow PostgreSQL traffic from any IPv4 address
   ingress {
     from_port   = 5432
