@@ -1,27 +1,3 @@
-# ==================================================================================================
-# Fetch the Canonical-published Ubuntu 24.04 AMI ID from AWS Systems Manager Parameter Store
-# This path is maintained by Canonical; it always points at the current stable AMI for 24.04 (amd64, HVM, gp3)
-# ==================================================================================================
-data "aws_ssm_parameter" "ubuntu_24_04" {
-  name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id"
-}
-
-# ==================================================================================================
-# Resolve the full AMI object using the ID returned by SSM
-# - Restrict owner to Canonical to avoid spoofed AMIs
-# - Filter by the exact image-id pulled above
-# - most_recent is kept true as a guard when multiple matches exist in a region
-# ==================================================================================================
-data "aws_ami" "ubuntu_ami" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "image-id"
-    values = [data.aws_ssm_parameter.ubuntu_24_04.value]
-  }
-}
-
 # ================================================================================
 # RESOURCE: aws_instance.phpmyadmin-rds-instance
 # ================================================================================

@@ -182,31 +182,6 @@ resource "aws_db_instance" "mysql_rds_replica" {
     Name = "MySQL RDS Read Replica"
   }
 }
-
-# ==============================================================================
-# RDS SUBNET GROUP
-# ==============================================================================
-# Defines which subnets RDS instances may use.
-#
-# Requirements:
-# - Should include at least two subnets in different AZs.
-# ==============================================================================
-resource "aws_db_subnet_group" "rds_subnet_group" {
-  # Name of the subnet group.
-  name = "rds-subnet-group"
-
-  # Subnets included in this group.
-  subnet_ids = [
-    aws_subnet.rds-subnet-1.id,
-    aws_subnet.rds-subnet-2.id
-  ]
-
-  # Resource tags.
-  tags = {
-    Name = "RDS Subnet Group"
-  }
-}
-
 # ==============================================================================
 # MYSQL PARAMETER GROUP
 # ==============================================================================
