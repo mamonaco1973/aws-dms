@@ -2,21 +2,18 @@
 # ==============================================================================
 # FILE: install_pgweb.sh
 # ==============================================================================
-# ORCHESTRATION SCRIPT: PAGILA LOAD AND PGWEB INSTALL
+# ORCHESTRATION SCRIPT: PGWEB INSTALL
 # ==============================================================================
-# Loads the Pagila sample database into Aurora and RDS PostgreSQL instances,
-# then installs and configures pgweb as a systemd-managed web UI.
+# Installs and configures pgweb as a systemd-managed web UI for PostgreSQL.
+# The PostgreSQL RDS instance starts empty — DMS populates it with Sakila data
+# during the migration task in Phase 2.
 #
 # High-level flow:
-#   1) Install required packages (psql client, unzip).
-#   2) Clone repo containing Pagila SQL scripts.
-#   3) Load Pagila into Aurora using provided credentials and endpoint.
-#   4) Load Pagila into RDS using provided credentials and endpoint.
-#   5) Install pgweb and register a systemd service on port 80.
+#   1) Install required packages (postgresql-client, unzip).
+#   2) Install pgweb binary.
+#   3) Register pgweb as a systemd service on port 80.
 #
 # Notes:
-# - Assumes AURORA_* and RDS_* environment variables are already defined.
-# - Pagila load output is appended to /root/db_load.log.
 # - pgweb is configured to listen on all interfaces (0.0.0.0).
 # ==============================================================================
 
@@ -29,43 +26,6 @@
 
 apt update -y
 apt install -y postgresql-client unzip
-
-# ------------------------------------------------------------------------------
-# CLONE REPO CONTAINING PAGILA SQL FILES
-# ------------------------------------------------------------------------------
-# Pull the Pagila SQL artifacts from GitHub into a temporary workspace.
-# ------------------------------------------------------------------------------
-
-cd /tmp
-git clone https://github.com/mamonaco1973/aws-postgres.git
-cd aws-postgres/01-rds/data
-
-# ------------------------------------------------------------------------------
-# SET ENVIRONMENT VARIABLES FOR RDS
-# ------------------------------------------------------------------------------
-# Configure PostgreSQL client variables for the standalone RDS endpoint.
-# ------------------------------------------------------------------------------
-
-export PGPASSWORD="${RDS_PASSWORD}"
-export PGUSER="${RDS_USER}"
-export PGENDPOINT="${RDS_ENDPOINT}"
-
-# ------------------------------------------------------------------------------
-# LOAD PAGILA INTO RDS
-# ------------------------------------------------------------------------------
-# Load the database, schema, and data into standalone RDS. All output is logged.
-# ------------------------------------------------------------------------------
-
-echo "NOTE: Loading RDS Test Database..." >> /root/db_load.log 2>&1
-
-PGPASSWORD=$PGPASSWORD psql -h $PGENDPOINT -U postgres -d postgres \
-  -f pagila-db.sql >> /root/db_load.log 2>&1
-
-PGPASSWORD=$PGPASSWORD psql -h $PGENDPOINT -U postgres -d pagila \
-  -f pagila-schema.sql >> /root/db_load.log 2>&1
-
-PGPASSWORD=$PGPASSWORD psql -h $PGENDPOINT -U postgres -d pagila \
-  -f pagila-data.sql >> /root/db_load.log 2>&1
 
 # ------------------------------------------------------------------------------
 # INSTALL AND CONFIGURE PGWEB

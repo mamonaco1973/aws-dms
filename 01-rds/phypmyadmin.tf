@@ -66,6 +66,6 @@ resource "aws_instance" "phpmyadmin-rds-instance" {
     Name = "phpmyadmin-rds"
   }
 
-  depends_on = [aws_db_instance.mysql_rds_replica]
+
 }
 

@@ -80,4 +80,33 @@ echo "==================================================================" >> /ro
 echo "phpMyAdmin installed and configured (NO PROMPTS)" >> /root/userdata.log 2>&1
 echo "Database endpoint : ${DB_ENDPOINT}" >> /root/userdata.log 2>&1
 echo "Access URL        : http://<INSTANCE_IP>/phpmyadmin" >> /root/userdata.log 2>&1
-echo "========================================
+echo "==================================================================" >> /root/userdata.log 2>&1
+
+# --------------------------------------------------------------------------------
+# Load the sample database
+# --------------------------------------------------------------------------------
+
+cd /tmp
+wget -q https://downloads.mysql.com/docs/sakila-db.zip
+unzip sakila-db.zip  >> /root/userdata.log 2>&1
+cd sakila-db 
+
+USER=${DB_USER}
+PASSWORD=${DB_PASSWORD}
+ENDPOINT=${DB_ENDPOINT}
+
+# Log endpoint information.
+echo "NOTE: Primary RDS Endpoint: $ENDPOINT"  >> /root/userdata.log 2>&1
+echo "NOTE: Loading 'sakila' data into RDS"  >> /root/userdata.log 2>&1
+
+# Create the Sakila database if it does not already exist.
+mysql -h "$ENDPOINT" -u "$USER" -p"$PASSWORD" \
+  -e "CREATE DATABASE IF NOT EXISTS sakila;" >> /root/userdata.log 2>&1
+
+# Load Sakila schema.
+mysql -h "$ENDPOINT" -u "$USER" -p"$PASSWORD" sakila \
+  < sakila-schema.sql >> /root/userdata.log 2>&1 || true
+
+# Load Sakila data.
+mysql -h "$ENDPOINT" -u "$USER" -p"$PASSWORD" sakila \
+  < sakila-data.sql >> /root/userdata.log 2>&1

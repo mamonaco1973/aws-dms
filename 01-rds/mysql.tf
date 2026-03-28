@@ -115,73 +115,7 @@ resource "aws_db_instance" "mysql_rds" {
   }
 }
 
-# ==============================================================================
-# MYSQL RDS READ REPLICA
-# ==============================================================================
-# Provisions a read-only replica of the primary MySQL RDS instance.
-#
-# Notes:
-# - Replicas are used for read scaling and reporting workloads.
-# - Engine and version are inherited from the source instance.
-# ==============================================================================
-resource "aws_db_instance" "mysql_rds_replica" {
-  # ----------------------------------------------------------------------------
-  # CORE IDENTIFIERS
-  # ----------------------------------------------------------------------------
-  # Logical identifier for the read replica.
-  identifier = "mysql-rds-replica"
 
-  # ----------------------------------------------------------------------------
-  # REPLICATION SOURCE
-  # ----------------------------------------------------------------------------
-  # Source database ARN for replication.
-  replicate_source_db = aws_db_instance.mysql_rds.arn
-
-  # ----------------------------------------------------------------------------
-  # ENGINE / INSTANCE SHAPE
-  # ----------------------------------------------------------------------------
-  # Match the primary engine and version.
-  engine         = aws_db_instance.mysql_rds.engine
-  engine_version = aws_db_instance.mysql_rds.engine_version
-
-  # Instance class for the replica.
-  instance_class = "db.t4g.micro"
-
-  # ----------------------------------------------------------------------------
-  # NETWORKING
-  # ----------------------------------------------------------------------------
-  # Subnet group for the replica.
-  db_subnet_group_name = aws_db_subnet_group.rds_subnet_group.name
-
-  # Security groups controlling access.
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
-
-  # Expose the replica endpoint publicly.
-  publicly_accessible = true
-
-  # ----------------------------------------------------------------------------
-  # OBSERVABILITY / LIFECYCLE
-  # ----------------------------------------------------------------------------
-  # Disable Performance Insights.
-  performance_insights_enabled = false
-
-  # Skip final snapshot on destroy.
-  skip_final_snapshot = true
-
-  # ----------------------------------------------------------------------------
-  # PARAMETER GROUP
-  # ----------------------------------------------------------------------------
-  # Custom MySQL parameter group.
-  parameter_group_name = aws_db_parameter_group.mysql_custom_params.name
-
-  # ----------------------------------------------------------------------------
-  # TAGGING
-  # ----------------------------------------------------------------------------
-  # Resource tags.
-  tags = {
-    Name = "MySQL RDS Read Replica"
-  }
-}
 # ==============================================================================
 # MYSQL PARAMETER GROUP
 # ==============================================================================

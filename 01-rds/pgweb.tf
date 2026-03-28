@@ -96,6 +96,5 @@ resource "aws_instance" "pgweb-instance" {
     Name = "pgweb-deployment"
   }
 
-  # Ensure the read replica exists before provisioning pgweb
-  depends_on = [aws_db_instance.postgres_rds_replica]
+
 }
