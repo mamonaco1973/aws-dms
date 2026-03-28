@@ -69,6 +69,13 @@ EOF
 sudo a2enmod php8.3 rewrite
 
 # --------------------------------------------------------------------------------
+# Redirect root URL to phpMyAdmin
+# Allows http://<host>/ to work in addition to http://<host>/phpmyadmin/
+# --------------------------------------------------------------------------------
+echo 'RedirectMatch ^/$ /phpmyadmin/' > /etc/apache2/conf-available/root-redirect.conf
+sudo a2enconf root-redirect
+
+# --------------------------------------------------------------------------------
 # Restart Apache
 # --------------------------------------------------------------------------------
 sudo systemctl restart apache2
