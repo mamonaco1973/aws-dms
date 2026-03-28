@@ -41,32 +41,6 @@ git clone https://github.com/mamonaco1973/aws-postgres.git
 cd aws-postgres/01-rds/data
 
 # ------------------------------------------------------------------------------
-# SET ENVIRONMENT VARIABLES FOR AURORA
-# ------------------------------------------------------------------------------
-# Configure PostgreSQL client variables for the Aurora endpoint.
-# ------------------------------------------------------------------------------
-
-export PGPASSWORD="${AURORA_PASSWORD}"
-export PGUSER="${AURORA_USER}"
-export PGENDPOINT="${AURORA_ENDPOINT}"
-
-# ------------------------------------------------------------------------------
-# LOAD PAGILA INTO AURORA
-# ------------------------------------------------------------------------------
-# Load the database, schema, and data into Aurora. All output is logged.
-# ------------------------------------------------------------------------------
-echo "NOTE: Loading Aurora Test Database..." >> /root/db_load.log 2>&1
-
-PGPASSWORD=$PGPASSWORD psql -h $PGENDPOINT -U postgres -d postgres \
-  -f pagila-db.sql >> /root/db_load.log 2>&1
-
-PGPASSWORD=$PGPASSWORD psql -h $PGENDPOINT -U postgres -d pagila \
-  -f pagila-schema.sql >> /root/db_load.log 2>&1
-
-PGPASSWORD=$PGPASSWORD psql -h $PGENDPOINT -U postgres -d pagila \
-  -f pagila-data.sql >> /root/db_load.log 2>&1
-
-# ------------------------------------------------------------------------------
 # SET ENVIRONMENT VARIABLES FOR RDS
 # ------------------------------------------------------------------------------
 # Configure PostgreSQL client variables for the standalone RDS endpoint.
